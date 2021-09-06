@@ -1,0 +1,48 @@
+zabbix_export:
+  version: '5.2'
+  date: '2021-09-06T14:31:29Z'
+  groups:
+    -
+      name: Templates
+  templates:
+    -
+      template: 'Template vmWare vm Snapshot check'
+      name: 'Template vmWare vm Snapshot check'
+      groups:
+        -
+          name: Templates
+      items:
+        -
+          name: 'Master item for vm''s with snapshots'
+          type: EXTERNAL
+          key: 'get-snapshot-list.py["-s","-u{$VCENTER_LOGIN}","-p{$VCENTER_PASS}","-v{HOST.IP}"]'
+          delay: 2h
+          history: '0'
+          trends: '0'
+          value_type: TEXT
+      discovery_rules:
+        -
+          name: 'get vm''s with snapshots'
+          type: EXTERNAL
+          key: 'get-snapshot-list.py["-u{$VCENTER_LOGIN}","-p{$VCENTER_PASS}","-v{HOST.IP}"]'
+          delay: 2h
+          item_prototypes:
+            -
+              name: 'Count of snapshots on {#VMNAME}'
+              type: DEPENDENT
+              key: 'vm.snapshot[{#VMNAME}]'
+              delay: '0'
+              history: 5d
+              trends: '0'
+              preprocessing:
+                -
+                  type: JSONPATH
+                  parameters:
+                    - '$.vms[''{#VMNAME}'']'
+              master_item:
+                key: 'get-snapshot-list.py["-s","-u{$VCENTER_LOGIN}","-p{$VCENTER_PASS}","-v{HOST.IP}"]'
+              trigger_prototypes:
+                -
+                  expression: '{last()} > 0'
+                  name: 'У запущенной виртуальной машины {#VMNAME} есть {ITEM.LASTVALUE} снэпшота'
+                  priority: AVERAGE
