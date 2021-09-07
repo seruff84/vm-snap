@@ -1,6 +1,6 @@
 zabbix_export:
   version: '5.2'
-  date: '2021-09-06T14:31:29Z'
+  date: '2021-09-07T06:25:34Z'
   groups:
     -
       name: Templates
@@ -26,6 +26,7 @@ zabbix_export:
           type: EXTERNAL
           key: 'get-snapshot-list.py["-u{$VCENTER_LOGIN}","-p{$VCENTER_PASS}","-v{HOST.IP}"]'
           delay: 2h
+          lifetime: 5d
           item_prototypes:
             -
               name: 'Count of snapshots on {#VMNAME}'
@@ -39,6 +40,8 @@ zabbix_export:
                   type: JSONPATH
                   parameters:
                     - '$.vms[''{#VMNAME}'']'
+                  error_handler: CUSTOM_VALUE
+                  error_handler_params: '0'
               master_item:
                 key: 'get-snapshot-list.py["-s","-u{$VCENTER_LOGIN}","-p{$VCENTER_PASS}","-v{HOST.IP}"]'
               trigger_prototypes:
